@@ -393,7 +393,7 @@ if analyze_btn:
                     {summary}
                 </p>
                 <p class="meta-info">
-                    <strong>Detection Method:</strong> {result['method']}
+                   
                 </p>
             </div>
         """, unsafe_allow_html=True)
