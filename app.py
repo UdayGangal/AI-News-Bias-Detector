@@ -5,7 +5,6 @@ from bias_detector_hf import BiasDetectorHF
 from gemini_handler import GeminiHandler
 import plotly.graph_objects as go
 
-
 st.set_page_config(
     page_title="News Bias Analysis Platform",
     layout="wide",
@@ -302,7 +301,7 @@ if analyze_btn:
         result = detector.detect_bias(text)
         
         # Get summary from Gemini
-        summary = gemini_handler.summarize_news(text)
+        summary = gemini_handler.get_summary(text, result)
         
         # Clear loading message
         results_placeholder.empty()
