@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup
 from bias_detector_hf import BiasDetectorHF
 from gemini_handler import GeminiHandler
 import plotly.graph_objects as go
+import os
+st.write("Gemini Key Loaded:", bool(os.getenv("GEMINI_API_KEY")))
+
 
 st.set_page_config(
     page_title="News Bias Analysis Platform",
