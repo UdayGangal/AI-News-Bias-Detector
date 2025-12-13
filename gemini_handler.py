@@ -30,15 +30,13 @@ class GeminiHandler:
         prompt = f"""
         Analyze the following news article or headline and determine if it appears to be:
         1. TRUE - Based on verifiable facts and credible sources
-        2. LIKELY TRUE - Plausible but needs verification
-        3. QUESTIONABLE - Contains dubious claims or lacks credibility
-        4. FALSE - Clearly false or misinformation
+        2. QUESTIONABLE - Contains dubious claims or lacks credibility or needs verification
+        3. FALSE - Clearly false or misinformation
         
         News: {news_text}
         
         Provide your analysis in the following format:
-        STATUS: [TRUE/LIKELY TRUE/QUESTIONABLE/FALSE]
-        ANALYSIS: [Brief explanation of why you rated it this way]
+        STATUS: [TRUE/QUESTIONABLE/FALSE]
         """
         
         try:
@@ -75,9 +73,7 @@ class GeminiHandler:
         Returns: summary string
         """
         prompt = f"""
-        Provide a concise, objective summary of the following news article or headline.
-        Keep it brief (2-3 sentences) and focus on the key facts.
-        
+        give me a concise summary of the following news article or headline:
         News: {news_text}
         
         Summary:
