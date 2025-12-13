@@ -31,49 +31,52 @@ st.markdown("""
     }
     
     .header-container {
-        background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-        padding: 3rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 2.5rem;
-        box-shadow: 0 10px 30px rgba(30, 58, 138, 0.15);
+        background: linear-gradient(135deg, #0f172a 0%, #1a202c 50%, #0f172a 100%);
+        padding: 3.5rem 2.5rem;
+        border-radius: 16px;
+        margin-bottom: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.1);
     }
     
     .header-container h1 {
         margin: 0;
         color: #ffffff;
-        font-size: 2.2rem;
-        font-weight: 600;
-        letter-spacing: -0.5px;
+        font-size: 2.4rem;
+        font-weight: 700;
+        letter-spacing: -0.8px;
     }
     
     .header-container p {
-        margin: 0.75rem 0 0 0;
-        color: #e0e7ff;
-        font-size: 0.95rem;
+        margin: 0.5rem 0 0 0;
+        color: #cbd5e1;
+        font-size: 0.98rem;
         font-weight: 400;
+        letter-spacing: 0.3px;
     }
     
     .input-container {
         background: #ffffff;
-        padding: 2rem;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        margin-bottom: 2rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 2.5rem;
+        border-radius: 14px;
+        border: 1px solid #d1d5db;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
     
     .metric-card {
-        background: #ffffff;
-        padding: 1.75rem;
-        border-radius: 10px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .metric-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        border-color: #d1d5db;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
     }
     
     .metric-label {
@@ -97,21 +100,21 @@ st.markdown("""
     .metric-right { color: #059669; }
     
     .chart-container {
-        background: #ffffff;
-        padding: 2rem;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        margin: 2rem 0;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        padding: 2.5rem;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        margin: 2.5rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
     
     .analysis-result {
-        background: #ffffff;
-        padding: 2rem;
-        border-radius: 12px;
-        border-left: 4px solid #3b82f6;
-        margin: 2rem 0;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        padding: 2.5rem;
+        border-radius: 14px;
+        border-left: 5px solid #3b82f6;
+        margin: 2.5rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
     
     .result-badge {
@@ -198,7 +201,6 @@ st.markdown("""
 st.markdown("""
     <div class="header-container">
         <h1>News Bias Analysis Platform</h1>
-        <p>Advanced AI-powered detection of political bias in news content</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -301,7 +303,7 @@ if analyze_btn:
         result = detector.detect_bias(text)
         
         # Get summary from Gemini
-        summary = gemini_handler.summarize_news(text)
+        summary = gemini_handler.get_summary(text, result)
         
         # Clear loading message
         results_placeholder.empty()
@@ -316,7 +318,7 @@ if analyze_btn:
             st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-label metric-left">Left Bias</div>
-                    <p class="metric-value metric-left">{result['left']}%</p>
+                    <p class="metric-value metric-left">{result['left']:.3f}%</p>
                 </div>
             """, unsafe_allow_html=True)
         
@@ -324,7 +326,7 @@ if analyze_btn:
             st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-label metric-neutral">Neutral</div>
-                    <p class="metric-value metric-neutral">{result['neutral']}%</p>
+                    <p class="metric-value metric-neutral">{result['neutral']:.3f}%</p>
                 </div>
             """, unsafe_allow_html=True)
         
@@ -332,7 +334,7 @@ if analyze_btn:
             st.markdown(f"""
                 <div class="metric-card">
                     <div class="metric-label metric-right">Right Bias</div>
-                    <p class="metric-value metric-right">{result['right']}%</p>
+                    <p class="metric-value metric-right">{result['right']:.3f}%</p>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -343,7 +345,7 @@ if analyze_btn:
             labels=["Left Bias", "Neutral", "Right Bias"],
             values=[result['left'], result['neutral'], result['right']],
             marker=dict(colors=["#dc2626", "#2563eb", "#059669"]),
-            hovertemplate="<b>%{label}</b><br>%{value}%<extra></extra>",
+            hovertemplate="<b>%{label}</b><br>%{value:.3f}%<extra></extra>",
             textposition="inside",
             textinfo="label+percent",
             textfont=dict(size=13, color="white", family="Arial, sans-serif"),
