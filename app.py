@@ -392,9 +392,6 @@ if analyze_btn:
                 <p class="summary-text">
                     {summary}
                 </p>
-                <p class="meta-info">
-                   
-                </p>
             </div>
         """, unsafe_allow_html=True)
 
