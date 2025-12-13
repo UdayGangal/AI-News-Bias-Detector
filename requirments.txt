@@ -1,9 +1,0 @@
-streamlit
-transformers
-torch
-sentencepiece
-google-generativeai
-python-dotenv
-matplotlib
-beautifulsoup4
-requests
