@@ -301,7 +301,7 @@ if analyze_btn:
         result = detector.detect_bias(text)
         
         # Get summary from Gemini
-        summary = gemini_handler.get_summary(text)
+        summary = gemini_handler.summarize_news(text)
         
         # Clear loading message
         results_placeholder.empty()
