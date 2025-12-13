@@ -320,7 +320,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 For issues, questions, or suggestions:
 
 - **Issues:** Open an [Issue](https://github.com/your-username/AI-News-Bias-Detector/issues)
-- **Email:** your.email@example.com
+- **Email:** udaygangal2006@gmail.com
 - **Repository:** [GitHub](https://github.com/your-username/AI-News-Bias-Detector)
 
 ---
