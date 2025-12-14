@@ -7,3 +7,4 @@ python-dotenv
 matplotlib
 beautifulsoup4
 requests
+plotly
