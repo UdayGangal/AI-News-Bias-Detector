@@ -4,6 +4,12 @@ import torch.nn.functional as F
 
 
 class BiasDetectorHF:
+    """
+    Hybrid Bias Detector:
+    - Transformer model detects whether text is biased
+    - Keyword logic determines ideological direction
+    """
+
     def __init__(self, model_name="valurank/distilroberta-bias"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -13,22 +19,38 @@ class BiasDetectorHF:
         self.model.eval()
 
         self.num_labels = self.model.config.num_labels
-        self.id2label = self.model.config.id2label
 
         self._init_keywords()
 
     def _init_keywords(self):
-        self.left_keywords = ['liberal', 'equality', 'climate', 'welfare']
-        self.right_keywords = ['conservative', 'capitalism', 'border', 'military']
-        self.neutral_keywords = ['report', 'data', 'officials', 'according to']
+        self.left_keywords = [
+            "liberal", "equality", "climate", "welfare", "social justice",
+            "renewable", "healthcare", "tax the rich", "progressive"
+        ]
+
+        self.right_keywords = [
+            "conservative", "capitalism", "border", "military", "law and order",
+            "national security", "free market", "traditional values"
+        ]
 
     def detect_bias(self, text):
+        """
+        Main entry point
+        """
         try:
-            return self._detect_with_model(text)
+            return self._hybrid_detect(text)
         except Exception:
-            return self._detect_with_keywords(text)
+            return self._keyword_only(text)
 
-    def _detect_with_model(self, text):
+    # ---------------- CORE HYBRID LOGIC ---------------- #
+
+    def _hybrid_detect(self, text):
+        """
+        1. Use ML model to detect bias intensity
+        2. Use keywords to detect direction
+        """
+
+        # --- MODEL PREDICTION ---
         inputs = self.tokenizer(
             text,
             return_tensors="pt",
@@ -42,55 +64,86 @@ class BiasDetectorHF:
 
         probs = F.softmax(logits, dim=-1)[0].cpu().numpy()
 
-        # SAFE default
-        scores = {"left": 0.0, "neutral": 0.0, "right": 0.0}
+        # Binary model → neutral vs biased
+        neutral_prob = probs[0] * 100
+        bias_prob = probs[1] * 100
 
-        if self.num_labels == 2:
-            # neutral vs biased
-            scores["neutral"] = probs[0] * 100
-            scores["right"] = probs[1] * 100
+        # --- KEYWORD DIRECTION ---
+        text_l = text.lower()
+        left_hits = sum(k in text_l for k in self.left_keywords)
+        right_hits = sum(k in text_l for k in self.right_keywords)
 
-        elif self.num_labels == 3:
-            for i, label in self.id2label.items():
-                label = label.lower()
-                if "left" in label:
-                    scores["left"] = probs[i] * 100
-                elif "right" in label or "conservative" in label:
-                    scores["right"] = probs[i] * 100
-                else:
-                    scores["neutral"] = probs[i] * 100
+        # --- DECISION LOGIC ---
+        if bias_prob < 55:
+            # Model not confident → Neutral
+            return {
+                "left": 0.0,
+                "right": 0.0,
+                "neutral": 100.0,
+                "overall_bias": "Neutral",
+                "confidence": round(neutral_prob, 2),
+                "method": "Hybrid (Low Bias Confidence)"
+            }
 
-        max_class = max(scores, key=scores.get)
+        # Bias exists → decide direction
+        if left_hits > right_hits:
+            return {
+                "left": round(bias_prob, 2),
+                "right": 0.0,
+                "neutral": round(100 - bias_prob, 2),
+                "overall_bias": "Left-Leaning",
+                "confidence": round(bias_prob, 2),
+                "method": "Hybrid (ML + Keywords)"
+            }
 
-        return {
-            "left": round(scores["left"], 2),
-            "right": round(scores["right"], 2),
-            "neutral": round(scores["neutral"], 2),
-            "overall_bias": max_class.capitalize(),
-            "method": "Hugging Face Model"
-        }
+        elif right_hits > left_hits:
+            return {
+                "left": 0.0,
+                "right": round(bias_prob, 2),
+                "neutral": round(100 - bias_prob, 2),
+                "overall_bias": "Right-Leaning",
+                "confidence": round(bias_prob, 2),
+                "method": "Hybrid (ML + Keywords)"
+            }
 
-    def _detect_with_keywords(self, text):
+        else:
+            # Biased but direction unclear
+            return {
+                "left": 0.0,
+                "right": 0.0,
+                "neutral": round(100 - bias_prob, 2),
+                "overall_bias": "Mixed / Unclear",
+                "confidence": round(bias_prob, 2),
+                "method": "Hybrid (Unclear Direction)"
+            }
+
+    # ---------------- FALLBACK ---------------- #
+
+    def _keyword_only(self, text):
+        """
+        Emergency fallback if model fails
+        """
         text = text.lower()
+        left_hits = sum(k in text for k in self.left_keywords)
+        right_hits = sum(k in text for k in self.right_keywords)
 
-        l = sum(k in text for k in self.left_keywords)
-        r = sum(k in text for k in self.right_keywords)
-        n = sum(k in text for k in self.neutral_keywords)
+        total = max(left_hits + right_hits, 1)
 
-        total = max(l + r + n, 1)
+        left = (left_hits / total) * 100
+        right = (right_hits / total) * 100
 
-        scores = {
-            "left": (l / total) * 100,
-            "neutral": (n / total) * 100,
-            "right": (r / total) * 100
-        }
-
-        max_class = max(scores, key=scores.get)
+        if left > right:
+            overall = "Left-Leaning"
+        elif right > left:
+            overall = "Right-Leaning"
+        else:
+            overall = "Neutral"
 
         return {
-            "left": round(scores["left"], 2),
-            "right": round(scores["right"], 2),
-            "neutral": round(scores["neutral"], 2),
-            "overall_bias": max_class.capitalize(),
+            "left": round(left, 2),
+            "right": round(right, 2),
+            "neutral": round(100 - max(left, right), 2),
+            "overall_bias": overall,
+            "confidence": round(max(left, right), 2),
             "method": "Keyword Fallback"
         }
